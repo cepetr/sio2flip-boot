@@ -1,0 +1,9 @@
+{
+    "cmake.generator": "Ninja",
+    "cmake.showSystemKits": false,
+    "cmake.useCMakePresets": "never",
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.configureArgs": [
+        "-DCMAKE_TOOLCHAIN_FILE=cc65-toolchain.cmake"
+    ],
+}
