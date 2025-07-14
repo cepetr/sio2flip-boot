@@ -1,19 +1,19 @@
 ; ========================================================================
-; 
-; This file is part of the 8-bit ATAR SIO Emulator for Flipper Zero 
+;
+; This file is part of the 8-bit ATAR SIO Emulator for Flipper Zero
 ; (https://github.com/cepetr/sio2flip).
 ; Copyright (c) 2025
-; 
-; This program is free software: you can redistribute it and/or modify  
-; it under the terms of the GNU General Public License as published by  
+;
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
 ; the Free Software Foundation, version 3.
 ;
-; This program is distributed in the hope that it will be useful, but 
-; WITHOUT ANY WARRANTY; without even the implied warranty of 
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+; This program is distributed in the hope that it will be useful, but
+; WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 ; General Public License for more details.
 ;
-; You should have received a copy of the GNU General Public License 
+; You should have received a copy of the GNU General Public License
 ; along with this program. If not, see <http://www.gnu.org/licenses/>.
 ;
 ; ========================================================================
@@ -26,7 +26,7 @@
 
             CHUNK_SIZE = 1024
             HEADER_SIZE = 4
-          
+
 ; ========================================================================
             .zeropage
 
@@ -81,28 +81,30 @@ read_block:
 
             lda     #<HEADER_SIZE   ; set buffer size
             sta     DBYTLO
-            lda     #>HEADER_SIZE   
-            sta     DBYTHI          
+            lda     #>HEADER_SIZE
+            sta     DBYTHI
 
             lda     #$40            ; set direction to read
             sta     DSTATS
 
             jsr     SIOV            ; receive a header
             jmi     error
-            
-            lda     #<start        ; set INITAD to do nothing
+
+            lda     #<start         ; set INITAD to do nothing
             sta     INITAD
             lda     #>start
             sta     INITAD + 1
-            lda     #<start        ; set INITAD to do nothing
-            sta     RUNAD
-            lda     #>start
-            sta     RUNAD + 1
 
+            lda     #0              ; check if blk_size == 0
+            cmp     blk_size
+            bne     read_chunk
+            cmp     blk_size + 1
+            bne     read_chunk
+            jmp     (RUNAD)         ; run app if no more data
 
 read_chunk:
             lda     #<CHUNK_SIZE    ; calculate chunk size
-            sta     DBYTLO          
+            sta     DBYTLO
             sub     blk_size
             lda     #>CHUNK_SIZE
             sta     DBYTHI
@@ -151,7 +153,6 @@ copy_full:
             jne     read_chunk
 
             jsr     init_block
-            jsr     run_block
 
             inc     DAUX1           ; increment block index
 
@@ -159,9 +160,6 @@ copy_full:
 
 init_block:
             jmp     (INITAD)
-
-run_block:
-            jmp     (RUNAD)
 
 rts_addr:
             rts
